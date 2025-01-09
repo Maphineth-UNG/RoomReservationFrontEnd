@@ -142,6 +142,8 @@ export default {
     },
   },
   data() {
+    const now = new Date();
+    const nowPlusOneHour = new Date(now.getTime() + 60 * 60 * 1000);
     return {
       bookings: [],
       rooms: [],
@@ -158,15 +160,14 @@ export default {
         endMinute: null,
       },
       createForm: {
-        roomId: '',
-        date: '',
-        startHour: null,
-        startMinute: null,
-        endHour: null,
-        endMinute: null,
+        date: now.toISOString().split('T')[0],
+        startHour: now.getHours(),
+        startMinute: Math.floor(now.getMinutes() / 5) * 5,
+        endHour: nowPlusOneHour.getHours(),
+        endMinute: Math.floor(nowPlusOneHour.getMinutes() / 5) * 5,
       },
       hours: Array.from({ length: 24 }, (_, i) => i),
-      minutes: Array.from({ length: 60 }, (_, i) => i),
+      minutes: Array.from({ length: 12 }, (_, i) => i * 5),
       currentBookingIndex: null,
     };
   },
