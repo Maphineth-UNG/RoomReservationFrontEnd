@@ -1,4 +1,4 @@
-# Room Reservation
+# Room Reservation FrontEnd
 
 ## Recommended IDE Setup
 
