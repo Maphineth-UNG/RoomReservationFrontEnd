@@ -17,21 +17,21 @@
           </tr>
         </thead>
         <tbody>
-        <tr v-for="(booking, index) in bookings" :key="booking.id">
-          <td>{{ booking.id }}</td>
-          <td>{{ getRoomName(booking.roomId) }}</td>
-          <td>{{ formatDate(booking.startTime) }}</td>
-          <td>{{ formatTime(booking.startTime) }}</td>
-          <td>{{ formatTime(booking.endTime) }}</td>
-          <td>
-            <button class="btn modify-btn" @click="editReservation(index)">Modify</button>
-            <button class="btn delete-btn" @click="deleteReservation(booking.id)">Delete</button>
-          </td>
-        </tr>
-        <tr v-if="bookings.length === 0">
-          <td colspan="6" class="no-data">No reservations available</td>
-        </tr>
-      </tbody>
+          <tr v-for="(booking, index) in bookings" :key="booking.id">
+            <td>{{ booking.id }}</td>
+            <td>{{ getRoomName(booking.roomId) }}</td>
+            <td>{{ formatDate(booking.startTime) }}</td>
+            <td>{{ formatTime(booking.startTime) }}</td>
+            <td>{{ formatTime(booking.endTime) }}</td>
+            <td>
+              <button class="btn modify-btn" @click="editReservation(index)">Modify</button>
+              <button class="btn delete-btn" @click="deleteReservation(booking.id)">Delete</button>
+            </td>
+          </tr>
+          <tr v-if="bookings.length === 0">
+            <td colspan="6" class="no-data">No reservations available</td>
+          </tr>
+        </tbody>
       </table>
     </div>
 
@@ -54,36 +54,32 @@
           </div>
           <div class="form-group">
             <label for="editStartTime">Start Time</label>
-            <input 
-              type="text"
-              id="editStartTime" 
-              :value="editForm.startTime"
-              @input="updateEditStartTime($event.target.value)"
-              pattern="([01]?[0-9]|2[0-3]):[0-5][0-9]"
-              placeholder="HH:mm"
-              required 
-            />
+            <select v-model="editForm.startHour" required>
+              <option v-for="hour in hours" :key="hour" :value="hour">{{ hour }}</option>
+            </select>
+            :
+            <select v-model="editForm.startMinute" required>
+              <option v-for="minute in minutes" :key="minute" :value="minute">{{ minute }}</option>
+            </select>
           </div>
           <div class="form-group">
             <label for="editEndTime">End Time</label>
-            <input 
-              type="text"
-              id="editEndTime" 
-              :value="editForm.endTime"
-              @input="updateEditEndTime($event.target.value)"
-              pattern="([01]?[0-9]|2[0-3]):[0-5][0-9]"
-              placeholder="HH:mm"
-              required 
-            />
+            <select v-model="editForm.endHour" required>
+              <option v-for="hour in hours" :key="hour" :value="hour">{{ hour }}</option>
+            </select>
+            :
+            <select v-model="editForm.endMinute" required>
+              <option v-for="minute in minutes" :key="minute" :value="minute">{{ minute }}</option>
+            </select>
           </div>
           <div class="error-message" v-if="timeError">{{ timeError }}</div>
           <div class="modal-actions">
-        <button type="submit" class="btn save-btn">Save</button>
-        <button type="button" class="btn cancel-btn" @click="closeEditModal">Cancel</button>
+            <button type="submit" class="btn save-btn">Save</button>
+            <button type="button" class="btn cancel-btn" @click="closeEditModal">Cancel</button>
+          </div>
+        </form>
       </div>
-    </form>
-  </div>
-</div>
+    </div>
 
     <!-- Create Reservation Modal -->
     <div v-if="showCreateModal" class="modal">
@@ -104,27 +100,23 @@
           </div>
           <div class="form-group">
             <label for="createStartTime">Start Time</label>
-            <input
-              type="text"
-              id="createStartTime"
-              :value="createForm.startTime"
-              @input="updateCreateStartTime($event.target.value)"
-              pattern="([01]?[0-9]|2[0-3]):[0-5][0-9]"
-              placeholder="HH:mm"
-              required
-            />
+            <select v-model="createForm.startHour" required>
+              <option v-for="hour in hours" :key="hour" :value="hour">{{ hour }}</option>
+            </select>
+            :
+            <select v-model="createForm.startMinute" required>
+              <option v-for="minute in minutes" :key="minute" :value="minute">{{ minute }}</option>
+            </select>
           </div>
           <div class="form-group">
-            <label for="createEndTime">End Times</label>
-            <input
-              type="text"
-              id="createEndTime"
-              :value="createForm.endTime"
-              @input="updateCreateEndTime($event.target.value)"
-              pattern="([01]?[0-9]|2[0-3]):[0-5][0-9]"
-              placeholder="HH:mm"
-              required
-            />
+            <label for="createEndTime">End Time</label>
+            <select v-model="createForm.endHour" required>
+              <option v-for="hour in hours" :key="hour" :value="hour">{{ hour }}</option>
+            </select>
+            :
+            <select v-model="createForm.endMinute" required>
+              <option v-for="minute in minutes" :key="minute" :value="minute">{{ minute }}</option>
+            </select>
           </div>
           <div class="error-message" v-if="timeError">{{ timeError }}</div>
           <div class="modal-actions">
@@ -160,21 +152,26 @@ export default {
         id: null,
         roomId: '',
         date: '',
-        startTime: '',
-        endTime: '',
+        startHour: null,
+        startMinute: null,
+        endHour: null,
+        endMinute: null,
       },
       createForm: {
         roomId: '',
         date: '',
-        startTime: '',
-        endTime: '',
+        startHour: null,
+        startMinute: null,
+        endHour: null,
+        endMinute: null,
       },
+      hours: Array.from({ length: 24 }, (_, i) => i),
+      minutes: Array.from({ length: 60 }, (_, i) => i),
       currentBookingIndex: null,
     };
   },
   async created() {
     try {
-      // Load rooms and bookings when component is created
       const [roomsData, bookingsData] = await Promise.all([
         api.getAllRooms(),
         api.getUserBookings(this.user.id)
@@ -185,126 +182,89 @@ export default {
       alert('Error loading data: ' + error.message);
     }
   },
-methods: {
-  getRoomName(roomId) {
-    const room = this.rooms.find(r => r.id === roomId);
-    return room ? room.name : 'Unknown Room';
-  },
+  methods: {
+    getRoomName(roomId) {
+      const room = this.rooms.find(r => r.id === roomId);
+      return room ? room.name : 'Unknown Room';
+    },
 
-  formatDate(date) {
-    return TimeUtils.formatDate(date);
-  },
+    formatDate(date) {
+      return TimeUtils.formatDate(date);
+    },
 
-  formatTime(time) {
-    return TimeUtils.formatTime(time);
-  },
+    formatTime(time) {
+      return TimeUtils.formatTime(time);
+    },
 
-  validateAndCreateReservation() {
-    this.timeError = '';
-    
-    if (!this.createForm.date) {
+    validateAndCreateReservation() {
+      this.timeError = '';
+
+      if (!this.createForm.date) {
         this.timeError = 'Please select a date';
         return;
-    }
+      }
 
-    const timeValidation = TimeUtils.isValidTimeRange(
+      const startTime = `${this.createForm.startHour}:${this.createForm.startMinute}`;
+      const endTime = `${this.createForm.endHour}:${this.createForm.endMinute}`;
+
+      const timeValidation = TimeUtils.isValidTimeRange(
         this.createForm.date,
-        this.createForm.startTime,
-        this.createForm.endTime
-    );
+        startTime,
+        endTime
+      );
 
-    if (!timeValidation.valid) {
+      if (!timeValidation.valid) {
         this.timeError = timeValidation.error;
         return;
-    }
+      }
 
-    this.createReservation();
-  },
+      this.createReservation();
+    },
 
-  closeEditModal() {
-    this.showEditModal = false;
-    this.timeError = ''; // Add this line
-    this.editForm = {
-      id: null,
-      roomId: '',
-      date: '',
-      startTime: '',
-      endTime: ''
-    };
-    this.currentBookingIndex = null;
-  },
+    closeEditModal() {
+      this.showEditModal = false;
+      this.timeError = '';
+      this.editForm = {
+        id: null,
+        roomId: '',
+        date: '',
+        startHour: null,
+        startMinute: null,
+        endHour: null,
+        endMinute: null,
+      };
+      this.currentBookingIndex = null;
+    },
 
-  updateEditStartTime(value) {
-    if (this.validateTimeFormat(value)) {
-      this.editForm.startTime = value;
-    }
-  },
+    async editReservation(index) {
+      const booking = this.bookings[index];
+      const startTime = new Date(booking.startTime);
+      const endTime = new Date(booking.endTime);
 
-  updateEditEndTime(value) {
-    if (this.validateTimeFormat(value)) {
-      this.editForm.endTime = value;
-    }
-  },
+      this.editForm = {
+        id: booking.id,
+        roomId: booking.roomId,
+        date: startTime.toISOString().split('T')[0],
+        startHour: startTime.getHours(),
+        startMinute: startTime.getMinutes(),
+        endHour: endTime.getHours(),
+        endMinute: endTime.getMinutes(),
+      };
+      this.currentBookingIndex = index;
+      this.showEditModal = true;
+    },
 
-  updateCreateStartTime(value) {
-    if (this.validateTimeFormat(value)) {
-      this.createForm.startTime = value;
-    }
-  },
+    async saveChanges() {
+      this.timeError = '';
 
-  updateCreateEndTime(value) {
-    if (this.validateTimeFormat(value)) {
-      this.createForm.endTime = value;
-    }
-  },
+      try {
+        const startTime = `${this.editForm.startHour}:${this.editForm.startMinute}`;
+        const endTime = `${this.editForm.endHour}:${this.editForm.endMinute}`;
 
-  validateTimeFormat(value) {
-    const timeRegex = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
-    return timeRegex.test(value);
-  },
-
-  openCreateModal() {
-    this.showCreateModal = true;
-  },
-  
-  closeCreateModal() {
-    this.showCreateModal = false;
-    this.timeError = ''; // Add this line
-    this.createForm = {
-      roomId: '',
-      date: '',
-      startTime: '',
-      endTime: '',
-    };
-  },
-
-  async editReservation(index) {
-    const booking = this.bookings[index];
-    const startDate = new Date(booking.startTime);
-    const endDate = new Date(booking.endTime);
-    
-    const start = TimeUtils.toUTCPlus1(booking.startTime);
-    const end = TimeUtils.toUTCPlus1(booking.endTime);
-    
-    this.editForm = {
-      id: booking.id,
-      roomId: booking.roomId,
-      date: start.date,
-      startTime: start.time,
-      endTime: end.time
-    };
-    this.currentBookingIndex = index;
-    this.showEditModal = true;
-  },
-
-  async saveChanges() {
-    this.timeError = '';
-    
-    try {
         const timeValidation = TimeUtils.isValidTimeRange(
           this.editForm.date,
-          this.editForm.startTime,
-          this.editForm.endTime
+          startTime,
+          endTime
         );
 
         if (!timeValidation.valid) {
@@ -312,56 +272,76 @@ methods: {
           return;
         }
 
-        const startDateTime = TimeUtils.toUTC(this.editForm.date, this.editForm.startTime);
-        const endDateTime = TimeUtils.toUTC(this.editForm.date, this.editForm.endTime);
+        const startDateTime = TimeUtils.toUTC(this.editForm.date, startTime);
+        const endDateTime = TimeUtils.toUTC(this.editForm.date, endTime);
 
         const updatedBooking = await api.updateBooking(this.editForm.id, {
           roomId: this.editForm.roomId,
           startTime: startDateTime,
           endTime: endDateTime,
-          userId: this.user.id
+          userId: this.user.id,
         });
-        
+
         this.bookings[this.currentBookingIndex] = updatedBooking;
         this.closeEditModal();
         alert('Reservation updated successfully!');
-    } catch (error) {
-        alert('Error updating reservation: ' + error.message);
-    }
-  },
-
-  async createReservation() {
-    try {
-      const startDateTime = TimeUtils.toUTC(this.createForm.date, this.createForm.startTime);
-      const endDateTime = TimeUtils.toUTC(this.createForm.date, this.createForm.endTime);
-
-      const newBooking = await api.createBooking({
-        roomId: this.createForm.roomId,
-        startTime: startDateTime,
-        endTime: endDateTime,
-        userId: this.user.id
-      });
-      
-      this.bookings.push(newBooking);
-      this.closeCreateModal();
-      alert('Reservation created successfully!');
-    } catch (error) {
-      alert('Error creating reservation: ' + error.message);
-    }
-  },
-
-  async deleteReservation(bookingId) {
-    if (confirm('Are you sure you want to delete this reservation?')) {
-      try {
-        await api.deleteBooking(bookingId);
-        this.bookings = this.bookings.filter(booking => booking.id !== bookingId);
-        alert('Reservation deleted successfully!');
       } catch (error) {
-        alert('Error deleting reservation: ' + error.message);
+        alert('Error updating reservation: ' + error.message);
       }
-    }
+    },
+
+    async createReservation() {
+      try {
+        const startTime = `${this.createForm.startHour}:${this.createForm.startMinute}`;
+        const endTime = `${this.createForm.endHour}:${this.createForm.endMinute}`;
+
+        const startDateTime = TimeUtils.toUTC(this.createForm.date, startTime);
+        const endDateTime = TimeUtils.toUTC(this.createForm.date, endTime);
+
+        const newBooking = await api.createBooking({
+          roomId: this.createForm.roomId,
+          startTime: startDateTime,
+          endTime: endDateTime,
+          userId: this.user.id,
+        });
+
+        this.bookings.push(newBooking);
+        this.closeCreateModal();
+        alert('Reservation created successfully!');
+      } catch (error) {
+        alert('Error creating reservation: ' + error.message);
+      }
+    },
+
+    async deleteReservation(bookingId) {
+      if (confirm('Are you sure you want to delete this reservation?')) {
+        try {
+          await api.deleteBooking(bookingId);
+          this.bookings = this.bookings.filter(booking => booking.id !== bookingId);
+          alert('Reservation deleted successfully!');
+        } catch (error) {
+          alert('Error deleting reservation: ' + error.message);
+        }
+      }
+    },
+
+    openCreateModal() {
+      this.showCreateModal = true;
+    },
+
+    closeCreateModal() {
+      this.showCreateModal = false;
+      this.timeError = '';
+      this.createForm = {
+        roomId: '',
+        date: '',
+        startHour: null,
+        startMinute: null,
+        endHour: null,
+        endMinute: null,
+      };
+    },
   },
-}
 };
 </script>
 
