@@ -238,7 +238,7 @@ export default {
 
       this.createReservation();
     }
-,
+    ,
 
     closeEditModal() {
       this.showEditModal = false;
@@ -274,39 +274,13 @@ export default {
     },
 
     async saveChanges() {
-      this.timeError = '';
-
       try {
-        const startDateTime = new Date(
-          `${this.editForm.date}T${this.editForm.startHour}:${this.editForm.startMinute}`
-        );
-        const endDateTime = new Date(
-          `${this.editForm.endDate}T${this.editForm.endHour}:${this.editForm.endMinute}`
-        );
-
-        const updatedBooking = await api.updateBooking(this.editForm.id, {
-          roomId: this.editForm.roomId,
-          startTime: startDateTime.toISOString(),
-          endTime: endDateTime.toISOString(),
-          userId: this.user.id,
-        });
-
-        this.bookings[this.currentBookingIndex] = updatedBooking;
-        this.closeEditModal();
-        alert('Reservation updated successfully!');
-      } catch (error) {
-        alert('Error updating reservation: ' + error.message);
-      }
-    },
-
-    async createReservation() {
-      try {
-        if (!this.createForm.date || !this.createForm.endDate) {
+        if (!this.editForm.date || !this.editForm.endDate) {
           throw new Error('Both start and end dates are required');
         }
 
-        const startDateTimeStr = `${this.createForm.date}T${String(this.createForm.startHour).padStart(2, '0')}:${String(this.createForm.startMinute).padStart(2, '0')}`;
-        const endDateTimeStr = `${this.createForm.endDate}T${String(this.createForm.endHour).padStart(2, '0')}:${String(this.createForm.endMinute).padStart(2, '0')}`;
+        const startDateTimeStr = `${this.editForm.date}T${String(this.editForm.startHour).padStart(2, '0')}:${String(this.editForm.startMinute).padStart(2, '0')}`;
+        const endDateTimeStr = `${this.editForm.endDate}T${String(this.editForm.endHour).padStart(2, '0')}:${String(this.editForm.endMinute).padStart(2, '0')}`;
 
         const startDateTime = new Date(startDateTimeStr);
         const endDateTime = new Date(endDateTimeStr);
@@ -316,7 +290,7 @@ export default {
         }
 
         const payload = {
-          roomId: this.createForm.roomId,
+          roomId: this.editForm.roomId,
           startTime: startDateTime.toISOString(),
           endTime: endDateTime.toISOString(),
           userId: this.user.id,
@@ -324,46 +298,81 @@ export default {
 
         console.log('Payload:', payload);
 
-        const newBooking = await api.createBooking(payload);
+        const updatedBooking = await api.updateBooking(this.editForm.id, payload);
 
-        this.bookings.push(newBooking);
-        this.closeCreateModal();
-        alert('Reservation created successfully!');
+        this.bookings[this.currentBookingIndex] = updatedBooking;
+        this.closeEditModal();
+        alert('Reservation updated successfully!');
       } catch (error) {
-        console.error('Error creating reservation:', error);
-        alert('Error creating reservation: ' + error.message);
+        alert('Error updating reservation: ' + error.message);
       }
     },
 
-    async deleteReservation(bookingId) {
-      if (confirm('Are you sure you want to delete this reservation?')) {
-        try {
-          await api.deleteBooking(bookingId);
-          this.bookings = this.bookings.filter(booking => booking.id !== bookingId);
-          alert('Reservation deleted successfully!');
-        } catch (error) {
-          alert('Error deleting reservation: ' + error.message);
-        }
+  async createReservation() {
+    try {
+      if (!this.createForm.date || !this.createForm.endDate) {
+        throw new Error('Both start and end dates are required');
       }
-    },
 
-    openCreateModal() {
-      this.showCreateModal = true;
-    },
+      const startDateTimeStr = `${this.createForm.date}T${String(this.createForm.startHour).padStart(2, '0')}:${String(this.createForm.startMinute).padStart(2, '0')}`;
+      const endDateTimeStr = `${this.createForm.endDate}T${String(this.createForm.endHour).padStart(2, '0')}:${String(this.createForm.endMinute).padStart(2, '0')}`;
 
-    closeCreateModal() {
-      this.showCreateModal = false;
-      this.timeError = '';
-      this.createForm = {
-        roomId: '',
-        date: '',
-        startHour: null,
-        startMinute: null,
-        endHour: null,
-        endMinute: null,
+      const startDateTime = new Date(startDateTimeStr);
+      const endDateTime = new Date(endDateTimeStr);
+
+      if (isNaN(startDateTime.getTime()) || isNaN(endDateTime.getTime())) {
+        throw new Error('Invalid date/time format');
+      }
+
+      const payload = {
+        roomId: this.createForm.roomId,
+        startTime: startDateTime.toISOString(),
+        endTime: endDateTime.toISOString(),
+        userId: this.user.id,
       };
-    },
+
+      console.log('Payload:', payload);
+
+      const newBooking = await api.createBooking(payload);
+
+      this.bookings.push(newBooking);
+      this.closeCreateModal();
+      alert('Reservation created successfully!');
+    } catch (error) {
+      console.error('Error creating reservation:', error);
+      alert('Error creating reservation: ' + error.message);
+    }
   },
+
+  async deleteReservation(bookingId) {
+    if (confirm('Are you sure you want to delete this reservation?')) {
+      try {
+        await api.deleteBooking(bookingId);
+        this.bookings = this.bookings.filter(booking => booking.id !== bookingId);
+        alert('Reservation deleted successfully!');
+      } catch (error) {
+        alert('Error deleting reservation: ' + error.message);
+      }
+    }
+  },
+
+  openCreateModal() {
+    this.showCreateModal = true;
+  },
+
+  closeCreateModal() {
+    this.showCreateModal = false;
+    this.timeError = '';
+    this.createForm = {
+      roomId: '',
+      date: '',
+      startHour: null,
+      startMinute: null,
+      endHour: null,
+      endMinute: null,
+    };
+  },
+},
 };
 </script>
 
@@ -444,17 +453,28 @@ export default {
 /* Styling for the green layout container */
 /* Green button styled like the Logout button */
 .create-btn {
-  background-color: #28a745; /* Green background */
-  color: white; /* White text */
-  padding: 10px 20px; /* Similar padding as Logout */
-  font-size: 16px; /* Same font size */
-  border: none; /* No border */
-  border-radius: 5px; /* Same rounded corners */
-  cursor: pointer; /* Pointer cursor */
-  transition: background-color 0.3s ease; /* Smooth hover effect */
-  margin: 10px 0; /* Consistent margin */
-  display: inline-block; /* Inline-block to match button alignment */
+  background-color: #28a745;
+  /* Green background */
+  color: white;
+  /* White text */
+  padding: 10px 20px;
+  /* Similar padding as Logout */
+  font-size: 16px;
+  /* Same font size */
+  border: none;
+  /* No border */
+  border-radius: 5px;
+  /* Same rounded corners */
+  cursor: pointer;
+  /* Pointer cursor */
+  transition: background-color 0.3s ease;
+  /* Smooth hover effect */
+  margin: 10px 0;
+  /* Consistent margin */
+  display: inline-block;
+  /* Inline-block to match button alignment */
 }
+
 .modal {
   position: fixed;
   top: 0;
