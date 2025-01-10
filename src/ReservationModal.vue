@@ -154,7 +154,20 @@ export default {
         return;
       }
 
-      if (endDateTime <= startDateTime) {
+      if (this.localForm.date === this.localForm.endDate) {
+        const startHourInt = parseInt(this.localForm.startHour);
+        const endHourInt = parseInt(this.localForm.endHour);
+
+        if (startHourInt > endHourInt) {
+          this.$emit('update:timeError', 'For bookings crossing midnight, please select the next day as the end date.');
+          return;
+        }
+      }
+
+      const startTimestamp = startDateTime.getTime();
+      const endTimestamp = endDateTime.getTime();
+
+      if (endTimestamp <= startTimestamp) {
         this.$emit('update:timeError', 'End time must be after start time.');
         return;
       }
