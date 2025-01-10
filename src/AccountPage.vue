@@ -71,11 +71,11 @@
           <div class="form-group">
             <label for="editEndTime">End Time</label>
             <select v-model="editForm.endHour" required>
-              <option v-for="hour in hours" :key="hour" :value="hour">{{ hour }}</option>
+              <option v-for="hour in paddedHours" :key="hour" :value="hour">{{ hour }}</option>
             </select>
             :
             <select v-model="editForm.endMinute" required>
-              <option v-for="minute in minutes" :key="minute" :value="minute">{{ minute }}</option>
+              <option v-for="minute in paddedMinutes" :key="minute" :value="minute">{{ minute }}</option>
             </select>
           </div>
           <div class="error-message" v-if="timeError">{{ timeError }}</div>
@@ -225,11 +225,18 @@ export default {
         return;
       }
 
+      const now = new Date();
+      
       const startDateTimeStr = `${this.createForm.date}T${String(this.createForm.startHour).padStart(2, '0')}:${String(this.createForm.startMinute).padStart(2, '0')}`;
       const endDateTimeStr = `${this.createForm.endDate}T${String(this.createForm.endHour).padStart(2, '0')}:${String(this.createForm.endMinute).padStart(2, '0')}`;
 
       const startDateTime = new Date(startDateTimeStr);
       const endDateTime = new Date(endDateTimeStr);
+
+      if (startDateTime < now) {
+        this.timeError = 'Start time cannot be in the past. Please select a valid time.';
+        return;
+      }
 
       if (isNaN(startDateTime.getTime()) || isNaN(endDateTime.getTime())) {
         this.timeError = 'Invalid date/time format';
@@ -268,15 +275,20 @@ export default {
       const startTime = new Date(booking.startTime);
       const endTime = new Date(booking.endTime);
 
+      startTime.setHours(startTime.getHours() + 1);
+      endTime.setHours(endTime.getHours() + 1);
+
       this.editForm = {
-        id: booking.id,
-        roomId: booking.roomId,
-        date: startTime.toISOString().split('T')[0],
-        startHour: startTime.getHours(),
-        startMinute: startTime.getMinutes(),
-        endHour: endTime.getHours(),
-        endMinute: endTime.getMinutes(),
+        id: booking.id, // Booking ID
+        roomId: booking.roomId, // Room ID
+        date: startTime.toISOString().split('T')[0], // Start date in YYYY-MM-DD
+        startHour: String(startTime.getHours()).padStart(2, '0'), // Start hour, padded
+        startMinute: String(startTime.getMinutes()).padStart(2, '0'), // Start minute, padded
+        endDate: endTime.toISOString().split('T')[0], // End date in YYYY-MM-DD
+        endHour: String(endTime.getHours()).padStart(2, '0'), // End hour, padded
+        endMinute: String(endTime.getMinutes()).padStart(2, '0'), // End minute, padded
       };
+
       this.currentBookingIndex = index;
       this.showEditModal = true;
     },
@@ -295,6 +307,21 @@ export default {
 
         if (isNaN(startDateTime.getTime()) || isNaN(endDateTime.getTime())) {
           throw new Error('Invalid date/time format');
+        }
+
+        const now = new Date();
+        if (startDateTime < now) {
+          this.timeError = 'Start time cannot be in the past. Please choose a valid time.';
+          return;
+        }
+
+        if (endDateTime <= startDateTime) {
+          throw new Error('End time must be after start time');
+        }
+
+        const duration = (endDateTime - startDateTime) / (1000 * 60 * 60);
+        if (duration > 4) {
+          throw new Error('Reservations cannot exceed 4 hours');
         }
 
         const payload = {
