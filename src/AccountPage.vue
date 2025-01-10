@@ -57,11 +57,11 @@
           <div class="form-group">
             <label for="editStartTime">Start Time</label>
             <select v-model="editForm.startHour" required>
-              <option v-for="hour in hours" :key="hour" :value="hour">{{ hour }}</option>
+              <option v-for="hour in paddedHours" :key="hour" :value="hour">{{ hour }}</option>
             </select>
             :
             <select v-model="editForm.startMinute" required>
-              <option v-for="minute in minutes" :key="minute" :value="minute">{{ minute }}</option>
+              <option v-for="minute in paddedMinutes" :key="minute" :value="minute">{{ minute }}</option>
             </select>
           </div>
           <div class="form-group">
@@ -107,11 +107,11 @@
           <div class="form-group">
             <label for="createStartTime">Start Time</label>
             <select v-model="createForm.startHour" required>
-              <option v-for="hour in hours" :key="hour" :value="hour">{{ hour }}</option>
+              <option v-for="hour in paddedHours" :key="hour" :value="hour">{{ hour }}</option>
             </select>
             :
             <select v-model="createForm.startMinute" required>
-              <option v-for="minute in minutes" :key="minute" :value="minute">{{ minute }}</option>
+              <option v-for="minute in paddedMinutes" :key="minute" :value="minute">{{ minute }}</option>
             </select>
           </div>
           <div class="form-group">
@@ -121,11 +121,11 @@
           <div class="form-group">
             <label for="createEndTime">End Time</label>
             <select v-model="createForm.endHour" required>
-              <option v-for="hour in hours" :key="hour" :value="hour">{{ hour }}</option>
+              <option v-for="hour in paddedHours" :key="hour" :value="hour">{{ hour }}</option>
             </select>
             :
             <select v-model="createForm.endMinute" required>
-              <option v-for="minute in minutes" :key="minute" :value="minute">{{ minute }}</option>
+              <option v-for="minute in paddedMinutes" :key="minute" :value="minute">{{ minute }}</option>
             </select>
           </div>
           <div class="error-message" v-if="timeError">{{ timeError }}</div>
@@ -182,6 +182,14 @@ export default {
       minutes: Array.from({ length: 12 }, (_, i) => i * 5),
       currentBookingIndex: null,
     };
+  },
+  computed: {
+    paddedHours() {
+      return this.hours.map(hour => String(hour).padStart(2, '0')); // '00' to '23'
+    },
+    paddedMinutes() {
+      return this.minutes.map(minute => String(minute).padStart(2, '0')); // '00', '05', ..., '55'
+    },
   },
   async created() {
     try {
@@ -357,6 +365,21 @@ export default {
   },
 
   openCreateModal() {
+    const now = new Date();
+    const nowPlusTwoHours = new Date(now.getTime() + 2 * 60 * 60 * 1000);
+
+    const roundedMinutes = Math.floor(now.getMinutes() / 5) * 5 + 5;
+
+    this.createForm = {
+      roomId: this.rooms[0].id, 
+      date: now.toISOString().split('T')[0],
+      startHour: String(now.getHours()).padStart(2, '0'),
+      startMinute: String(roundedMinutes).padStart(2, '0'),
+      endDate: now.toISOString().split('T')[0],
+      endHour: String(nowPlusTwoHours.getHours()).padStart(2, '0'),
+      endMinute: String(roundedMinutes).padStart(2, '0'),
+    }; 
+    
     this.showCreateModal = true;
   },
 
