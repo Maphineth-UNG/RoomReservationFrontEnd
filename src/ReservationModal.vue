@@ -184,6 +184,14 @@ export default {
   justify-content: center;
   align-items: center;
 }
+
+.modal-content h3 {
+  font-weight: bold;
+  text-align: center;
+  padding-bottom: 20px;
+  margin: 0;
+}
+
 .modal-content {
   background: white;
   padding: 20px;
@@ -191,20 +199,25 @@ export default {
   width: 300px;
   text-align: left;
 }
-.error-message {
-  color: #dc3545;
-  margin-top: 10px;
-  font-size: 14px;
-}
+
 .modal-actions {
-  margin-top: 20px;
+  margin-top: 10px;
   display: flex;
   justify-content: space-between;
 }
 
+.form-group {
+  margin-bottom: 10px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+}
+
 .btn {
-  margin: 0 5px;
-  padding: 5px 10px;
+  margin: 15px 10px;
+  padding: 10px 30px;
   font-size: 14px;
   border: none;
   border-radius: 5px;
@@ -220,5 +233,11 @@ export default {
 .cancel-btn {
   background-color: #d9534f;
   color: white;
+}
+
+.error-message {
+  color: #dc3545;
+  margin-top: 10px;
+  font-size: 14px;
 }
 </style>

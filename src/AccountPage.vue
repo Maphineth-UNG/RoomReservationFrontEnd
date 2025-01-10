@@ -8,7 +8,6 @@
       <table class="reservation-table">
         <thead>
           <tr>
-            <th>Reservation ID</th>
             <th>Room Name</th>
             <th>Start Date</th>
             <th>Start Time</th>
@@ -19,7 +18,6 @@
         </thead>
         <tbody>
           <tr v-for="(booking, index) in bookings" :key="booking.id">
-            <td>{{ booking.id }}</td>
             <td>{{ getRoomName(booking.roomId) }}</td>
             <td>{{ formatDate(booking.startTime) }}</td>
             <td>{{ formatTime(booking.startTime) }}</td>
@@ -31,7 +29,7 @@
             </td>
           </tr>
           <tr v-if="bookings.length === 0">
-            <td colspan="7" class="no-data">No reservations available</td>
+            <td colspan="6" class="no-data">No reservations available</td>
           </tr>
         </tbody>
       </table>
@@ -267,74 +265,9 @@ export default {
   display: inline-block;
 }
 
-.modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.modal-content {
-  background: white;
-  padding: 20px;
-  border-radius: 10px;
-  width: 300px;
-  text-align: left;
-}
-
 .error-message {
   color: #dc3545;
   margin-top: 10px;
   font-size: 14px;
-}
-
-.modal-actions {
-  margin-top: 20px;
-  display: flex;
-  justify-content: space-between;
-}
-
-.save-btn {
-  background-color: #5cb85c;
-  color: white;
-}
-
-.save-btn:hover {
-  background-color: #4cae4c;
-}
-
-.cancel-btn {
-  background-color: #d9534f;
-  color: white;
-}
-
-.cancel-btn:hover {
-  background-color: #c9302c;
-}
-
-input[type="time"]::-webkit-datetime-edit-ampm-field {
-  display: none;
-}
-
-input[type="time"] {
-  -webkit-appearance: textfield;
-  -moz-appearance: textfield;
-}
-
-input[type="text"] {
-  width: 100%;
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  font-family: monospace;
-}
-
-input[type="text"]:invalid {
-  border-color: #dc3545;
 }
 </style>
