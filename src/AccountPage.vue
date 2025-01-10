@@ -185,10 +185,10 @@ export default {
   },
   computed: {
     paddedHours() {
-      return this.hours.map(hour => String(hour).padStart(2, '0')); // '00' to '23'
+      return this.hours.map(hour => String(hour).padStart(2, '0'));
     },
     paddedMinutes() {
-      return this.minutes.map(minute => String(minute).padStart(2, '0')); // '00', '05', ..., '55'
+      return this.minutes.map(minute => String(minute).padStart(2, '0')); 
     },
   },
   async created() {
@@ -279,14 +279,14 @@ export default {
       endTime.setHours(endTime.getHours() + 1);
 
       this.editForm = {
-        id: booking.id, // Booking ID
-        roomId: booking.roomId, // Room ID
-        date: startTime.toISOString().split('T')[0], // Start date in YYYY-MM-DD
-        startHour: String(startTime.getHours()).padStart(2, '0'), // Start hour, padded
-        startMinute: String(startTime.getMinutes()).padStart(2, '0'), // Start minute, padded
-        endDate: endTime.toISOString().split('T')[0], // End date in YYYY-MM-DD
-        endHour: String(endTime.getHours()).padStart(2, '0'), // End hour, padded
-        endMinute: String(endTime.getMinutes()).padStart(2, '0'), // End minute, padded
+        id: booking.id, 
+        roomId: booking.roomId, 
+        date: startTime.toISOString().split('T')[0],
+        startHour: String(startTime.getHours()).padStart(2, '0'), 
+        startMinute: String(startTime.getMinutes()).padStart(2, '0'),
+        endDate: endTime.toISOString().split('T')[0], 
+        endHour: String(endTime.getHours()).padStart(2, '0'), 
+        endMinute: String(endTime.getMinutes()).padStart(2, '0'), 
       };
 
       this.currentBookingIndex = index;
@@ -429,7 +429,6 @@ export default {
 
 
 <style scoped>
-/* Styling the page and modal */
 .account-container {
   text-align: center;
   margin: 20px;
@@ -500,29 +499,17 @@ export default {
   background-color: #4a69b2;
 }
 
-/* Styling for the green layout container */
-/* Green button styled like the Logout button */
 .create-btn {
   background-color: #28a745;
-  /* Green background */
   color: white;
-  /* White text */
   padding: 10px 20px;
-  /* Similar padding as Logout */
   font-size: 16px;
-  /* Same font size */
   border: none;
-  /* No border */
   border-radius: 5px;
-  /* Same rounded corners */
   cursor: pointer;
-  /* Pointer cursor */
   transition: background-color 0.3s ease;
-  /* Smooth hover effect */
   margin: 10px 0;
-  /* Consistent margin */
   display: inline-block;
-  /* Inline-block to match button alignment */
 }
 
 .modal {
