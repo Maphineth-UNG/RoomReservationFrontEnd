@@ -77,7 +77,12 @@ export default {
       type: String,
       default: '',
     },
+    timeError: {
+      type: String,
+      default: '',
+    },
   },
+  emits: ['update:timeError', 'save', 'close'],
   data() {
     const now = new Date();
     const nowPlusTwoHours = new Date(now.getTime() + 2 * 60 * 60 * 1000);
@@ -130,6 +135,8 @@ export default {
   },
   methods: {
     handleSubmit() {
+      this.$emit('update:timeError', ''); 
+      
       const startDateTimeStr = `${this.localForm.date}T${this.localForm.startHour}:${this.localForm.startMinute}`;
       const endDateTimeStr = `${this.localForm.endDate}T${this.localForm.endHour}:${this.localForm.endMinute}`;
 

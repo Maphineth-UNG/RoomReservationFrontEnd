@@ -35,7 +35,7 @@
       </table>
     </div>
 
-    <ReservationModal v-if="showModal" :mode="modalMode" :rooms="rooms" :form="form" :time-error="timeError"
+    <ReservationModal v-if="showModal" :mode="modalMode" :rooms="rooms" :form="form" v-model:timeError="timeError"
       @save="handleSave" @close="closeModal" />
     <button class="btn logout-btn" @click="$emit('logout')">Logout</button>
   </div>
