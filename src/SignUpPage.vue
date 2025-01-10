@@ -1,28 +1,15 @@
 <template>
   <div class="signup-container">
     <form class="form-container" @submit.prevent="createAccount">
-      <div class="input-group">
-        <label for="firstName">First name</label>
-        <input type="text" id="firstName" v-model="firstName" placeholder="Enter your first name" />
-      </div>
-      <div class="input-group">
-        <label for="lastName">Last name</label>
-        <input type="text" id="lastName" v-model="lastName" placeholder="Enter your last name" />
-      </div>
-      <div class="input-group">
-        <label for="email">Email</label>
-        <input type="email" id="email" v-model="email" placeholder="Enter your email" />
-      </div>
-      <div class="input-group">
-        <label for="password">Password</label>
-        <input type="password" id="password" v-model="password" placeholder="Password" />
-      </div>
-      <div class="input-group">
-        <label for="confirmPassword">Confirm Password</label>
-        <input type="password" id="confirmPassword" v-model="confirmPassword" placeholder="Confirm Password" />
-      </div>
+      <InputField label="First name" id="firstName" type="text" v-model="firstName"
+        placeholder="Enter your first name" />
+      <InputField label="Last name" id="lastName" type="text" v-model="lastName" placeholder="Enter your last name" />
+      <InputField label="Email" id="email" type="email" v-model="email" placeholder="Enter your email" />
+      <InputField label="Password" id="password" type="password" v-model="password" placeholder="Password" />
+      <InputField label="Confirm Password" id="confirmPassword" type="password" v-model="confirmPassword"
+        placeholder="Confirm Password" />
       <div class="button-group">
-        <button type="submit" class="btn">Create account</button>
+        <button type="submit" class="btn create-account">Create account</button>
         <button type="button" class="btn back-btn" @click="$emit('switchToMain')">Back</button>
       </div>
       <div class="error-message" v-if="errorMessage">{{ errorMessage }}</div>
@@ -31,7 +18,10 @@
 </template>
 
 <script>
+import InputField from './InputField.vue';
+
 export default {
+  components: { InputField },
   data() {
     return {
       firstName: '',
@@ -43,36 +33,41 @@ export default {
     };
   },
   methods: {
-    createAccount() {
-      this.errorMessage = '';
-
+    validateFields() {
       if (!this.firstName || !this.lastName || !this.email || !this.password || !this.confirmPassword) {
-        this.errorMessage = 'All fields are required.';
-        return;
+        return 'All fields are required.';
       }
-
+      return null;
+    },
+    validateEmail() {
       const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailPattern.test(this.email)) {
-        this.errorMessage = 'Please enter a valid email address.';
-        return;
+        return 'Please enter a valid email address.';
       }
-
-      if (this.password !== this.confirmPassword) {
-        this.errorMessage = 'Passwords do not match.';
-        return;
-      }
-
-      this.$emit('createAccount', {
-        firstName: this.firstName,
-        lastName: this.lastName,
-        email: this.email,
-        password: this.password,
-      });
+      return null;
     },
-  },
+    validatePasswords() {
+      if (this.password !== this.confirmPassword) {
+        return 'Passwords do not match.';
+      }
+      return null;
+    },
+    createAccount() {
+      this.errorMessage = this.validateFields() || this.validateEmail() || this.validatePasswords();
+
+      if (!this.errorMessage) {
+        this.$emit('createAccount', {
+          firstName: this.firstName,
+          lastName: this.lastName,
+          email: this.email,
+          password: this.password,
+        });
+      }
+    },
+  }
+
 };
 </script>
-
 
 <style scoped>
 .signup-container {
@@ -114,35 +109,39 @@ input::placeholder {
   color: #aaa; /* Placeholder color */
 }
 
-.button-group {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
 .btn {
   width: 100%;
   padding: 10px;
   font-size: 16px;
   color: white;
-  background-color: #5a7dcf; /* Blue button background */
   border: none;
-  border-radius: 20px; /* Rounded corners */
+  border-radius: 20px;
+  /* Rounded corners */
   cursor: pointer;
   margin-bottom: 10px;
-  transition: background-color 0.3s ease; /* Smooth hover effect */
+  transition: background-color 0.3s ease;
+  /* Smooth hover effect */
 }
 
-.btn:hover {
-  background-color: #4a69b2; /* Darker blue on hover */
+/* Individual button styles */
+.btn.back-btn {
+  background-color: #d9534f;
+  /* Red for back button */
 }
 
-.back-btn {
-  background-color: #d9534f; /* Red for back button */
+.btn.back-btn:hover {
+  background-color: #c9302c;
+  /* Darker red on hover */
 }
 
-.back-btn:hover {
-  background-color: #c9302c; /* Darker red on hover */
+.btn.create-account {
+  background-color: #5a7dcf;
+  /* Blue button background */
+}
+
+.btn.create-account:hover {
+  background-color: #4a69b2;
+  /* Darker blue on hover */
 }
 
 .error-message {
