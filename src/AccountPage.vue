@@ -213,27 +213,32 @@ export default {
       this.timeError = '';
 
       if (!this.createForm.date || !this.createForm.endDate) {
-        this.timeError = 'Please select both start and end dates';
+        this.timeError = 'Both start and end dates are required';
         return;
       }
 
-      const startTime = `${this.createForm.startHour}:${this.createForm.startMinute}`;
-      const endTime = `${this.createForm.endHour}:${this.createForm.endMinute}`;
+      const startDateTimeStr = `${this.createForm.date}T${String(this.createForm.startHour).padStart(2, '0')}:${String(this.createForm.startMinute).padStart(2, '0')}`;
+      const endDateTimeStr = `${this.createForm.endDate}T${String(this.createForm.endHour).padStart(2, '0')}:${String(this.createForm.endMinute).padStart(2, '0')}`;
 
-      const timeValidation = TimeUtils.isValidTimeRange(
-        this.createForm.date,
-        startTime,
-        this.createForm.endDate,
-        endTime
-      );
+      const startDateTime = new Date(startDateTimeStr);
+      const endDateTime = new Date(endDateTimeStr);
 
-      if (!timeValidation.valid) {
-        this.timeError = timeValidation.error;
+      if (isNaN(startDateTime.getTime()) || isNaN(endDateTime.getTime())) {
+        this.timeError = 'Invalid date/time format';
+        return;
+      }
+
+      const timeDifferenceInMs = endDateTime.getTime() - startDateTime.getTime();
+      const timeDifferenceInHours = timeDifferenceInMs / (1000 * 60 * 60);
+
+      if (timeDifferenceInHours > 4) {
+        this.timeError = 'Reservations cannot exceed 4 hours';
         return;
       }
 
       this.createReservation();
-    },
+    }
+,
 
     closeEditModal() {
       this.showEditModal = false;
