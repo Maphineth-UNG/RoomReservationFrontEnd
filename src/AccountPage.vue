@@ -10,8 +10,9 @@
           <tr>
             <th>Reservation ID</th>
             <th>Room Name</th>
-            <th>Date</th>
+            <th>Start Date</th>
             <th>Start Time</th>
+            <th>End Date</th>
             <th>End Time</th>
             <th>Actions</th>
           </tr>
@@ -22,6 +23,7 @@
             <td>{{ getRoomName(booking.roomId) }}</td>
             <td>{{ formatDate(booking.startTime) }}</td>
             <td>{{ formatTime(booking.startTime) }}</td>
+            <td>{{ formatDate(booking.endTime) }}</td>
             <td>{{ formatTime(booking.endTime) }}</td>
             <td>
               <button class="btn modify-btn" @click="editReservation(index)">Modify</button>
@@ -29,7 +31,7 @@
             </td>
           </tr>
           <tr v-if="bookings.length === 0">
-            <td colspan="6" class="no-data">No reservations available</td>
+            <td colspan="7" class="no-data">No reservations available</td>
           </tr>
         </tbody>
       </table>
@@ -61,6 +63,10 @@
             <select v-model="editForm.startMinute" required>
               <option v-for="minute in minutes" :key="minute" :value="minute">{{ minute }}</option>
             </select>
+          </div>
+          <div class="form-group">
+            <label for="editEndDate">End Date</label>
+            <input type="date" id="editEndDate" v-model="editForm.endDate" required />
           </div>
           <div class="form-group">
             <label for="editEndTime">End Time</label>
@@ -107,6 +113,10 @@
             <select v-model="createForm.startMinute" required>
               <option v-for="minute in minutes" :key="minute" :value="minute">{{ minute }}</option>
             </select>
+          </div>
+          <div class="form-group">
+            <label for="createEndDate">End Date</label>
+            <input type="date" id="createEndDate" v-model="createForm.endDate" required />
           </div>
           <div class="form-group">
             <label for="createEndTime">End Time</label>
@@ -156,6 +166,7 @@ export default {
         date: '',
         startHour: null,
         startMinute: null,
+        endDate: '',
         endHour: null,
         endMinute: null,
       },
@@ -163,6 +174,7 @@ export default {
         date: now.toISOString().split('T')[0],
         startHour: now.getHours(),
         startMinute: Math.floor(now.getMinutes() / 5) * 5,
+        endDate: nowPlusOneHour.toISOString().split('T')[0],
         endHour: nowPlusOneHour.getHours(),
         endMinute: Math.floor(nowPlusOneHour.getMinutes() / 5) * 5,
       },
@@ -200,8 +212,8 @@ export default {
     validateAndCreateReservation() {
       this.timeError = '';
 
-      if (!this.createForm.date) {
-        this.timeError = 'Please select a date';
+      if (!this.createForm.date || !this.createForm.endDate) {
+        this.timeError = 'Please select both start and end dates';
         return;
       }
 
@@ -211,6 +223,7 @@ export default {
       const timeValidation = TimeUtils.isValidTimeRange(
         this.createForm.date,
         startTime,
+        this.createForm.endDate,
         endTime
       );
 
@@ -259,27 +272,17 @@ export default {
       this.timeError = '';
 
       try {
-        const startTime = `${this.editForm.startHour}:${this.editForm.startMinute}`;
-        const endTime = `${this.editForm.endHour}:${this.editForm.endMinute}`;
-
-        const timeValidation = TimeUtils.isValidTimeRange(
-          this.editForm.date,
-          startTime,
-          endTime
+        const startDateTime = new Date(
+          `${this.editForm.date}T${this.editForm.startHour}:${this.editForm.startMinute}`
         );
-
-        if (!timeValidation.valid) {
-          this.timeError = timeValidation.error;
-          return;
-        }
-
-        const startDateTime = TimeUtils.toUTC(this.editForm.date, startTime);
-        const endDateTime = TimeUtils.toUTC(this.editForm.date, endTime);
+        const endDateTime = new Date(
+          `${this.editForm.endDate}T${this.editForm.endHour}:${this.editForm.endMinute}`
+        );
 
         const updatedBooking = await api.updateBooking(this.editForm.id, {
           roomId: this.editForm.roomId,
-          startTime: startDateTime,
-          endTime: endDateTime,
+          startTime: startDateTime.toISOString(),
+          endTime: endDateTime.toISOString(),
           userId: this.user.id,
         });
 
@@ -293,23 +296,36 @@ export default {
 
     async createReservation() {
       try {
-        const startTime = `${this.createForm.startHour}:${this.createForm.startMinute}`;
-        const endTime = `${this.createForm.endHour}:${this.createForm.endMinute}`;
+        if (!this.createForm.date || !this.createForm.endDate) {
+          throw new Error('Both start and end dates are required');
+        }
 
-        const startDateTime = TimeUtils.toUTC(this.createForm.date, startTime);
-        const endDateTime = TimeUtils.toUTC(this.createForm.date, endTime);
+        const startDateTimeStr = `${this.createForm.date}T${String(this.createForm.startHour).padStart(2, '0')}:${String(this.createForm.startMinute).padStart(2, '0')}`;
+        const endDateTimeStr = `${this.createForm.endDate}T${String(this.createForm.endHour).padStart(2, '0')}:${String(this.createForm.endMinute).padStart(2, '0')}`;
 
-        const newBooking = await api.createBooking({
+        const startDateTime = new Date(startDateTimeStr);
+        const endDateTime = new Date(endDateTimeStr);
+
+        if (isNaN(startDateTime.getTime()) || isNaN(endDateTime.getTime())) {
+          throw new Error('Invalid date/time format');
+        }
+
+        const payload = {
           roomId: this.createForm.roomId,
-          startTime: startDateTime,
-          endTime: endDateTime,
+          startTime: startDateTime.toISOString(),
+          endTime: endDateTime.toISOString(),
           userId: this.user.id,
-        });
+        };
+
+        console.log('Payload:', payload);
+
+        const newBooking = await api.createBooking(payload);
 
         this.bookings.push(newBooking);
         this.closeCreateModal();
         alert('Reservation created successfully!');
       } catch (error) {
+        console.error('Error creating reservation:', error);
         alert('Error creating reservation: ' + error.message);
       }
     },
