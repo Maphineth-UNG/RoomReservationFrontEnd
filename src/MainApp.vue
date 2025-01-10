@@ -37,33 +37,39 @@ export default {
     AccountPage,
   },
   methods: {
+    switchPage(pageName) {
+      this.currentPage = pageName;
+    },
+    async handleError(callback) {
+      try {
+        await callback();
+      } catch (error) {
+        alert(error.message || 'An error occurred.');
+      }
+    },
     showSignUpPage() {
-      this.currentPage = 'signup';
+      this.switchPage('signup');
     },
     showMainPage() {
-      this.currentPage = 'main';
+      this.switchPage('main');
     },
     async handleCreateAccount(accountDetails) {
-      try {
+      this.handleError(async () => {
         await api.createUser(accountDetails);
         alert('Account created successfully! You can now log in.');
-        this.showMainPage();
-      } catch (error) {
-        alert(error.message);
-      }
+        this.switchPage('main');
+      });
     },
     async handleLogin(email, password) {
-      try {
+      this.handleError(async () => {
         const user = await api.login(email, password);
         this.loggedInUser = user;
-        this.currentPage = 'account';
-      } catch (error) {
-        alert('Invalid email or password.');
-      }
+        this.switchPage('account');
+      });
     },
     handleLogout() {
       this.loggedInUser = null;
-      this.showMainPage();
+      this.switchPage('main');
     },
   },
 };
