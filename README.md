@@ -63,11 +63,14 @@ The **Room Reservation** application allows users to:
    - Confirm Password
 3. Click **Create Account** to register.
 4. After successful registration, you'll be redirected to the login page.
+       
+       <img src="images/SignUpPage.PNG" alt="Sign Up Page" width="500"/>
 
 #### Login
 1. Enter your registered email and password on the login page.
 2. Click the **Login** button to access your account.
 3. If the login is successful, you will be redirected to the account dashboard.
+       <img src="images/SignInPage.PNG" alt="Log in Page" width="500"/>
 
 #### Creating a Reservation
 1. Click the **Create Reservation** button on the dashboard.
@@ -78,6 +81,8 @@ The **Room Reservation** application allows users to:
    - End Time
 3. Click **Save** to add the reservation.
 4. The new reservation will appear in the reservation table.
+       <img src="images/CreatingReservationPage.PNG.PNG" alt="Creating Reservation Page" width="500"/>
+
 
 #### Editing a Reservation
 1. Locate the reservation in the table.
